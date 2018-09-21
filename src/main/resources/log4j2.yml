@@ -1,0 +1,55 @@
+Configuration:
+  status: warn
+
+  Properties:
+    Property:
+      name: logPath
+      value: /home/efim/payment-log
+  Appenders:
+    Console:
+      name: STDOUT
+      PatternLayout:
+        Pattern: '%d{dd-MMM-yyyy, HH:mm:ss.SSS} [%t] %-5p %c - %m%n'
+    RollingFile:
+      -
+        name: File
+        fileName: ${logPath}/send_email_service-charge.log
+        filePattern: ${logPath}/app-%d{yy-MM-dd}.log.gz
+        PatternLayout:
+          Pattern: '%d{dd-MMM-yyyy, HH:mm:ss.SSS} [%t] %-5p %c - %m%n'
+        Filters:
+          ThresholdFilter:
+            level: debug
+        TimeBasedTriggeringPolicy:
+          interval: 1
+          modulate: true
+      -
+        name: PerspectiveFile
+        fileName: ${logPath}/send_email_service-charge-aefimov-app.log
+        filePattern: ${logPath}/app-%d{yy-MM-dd}.log.gz
+        PatternLayout:
+          Pattern: '%d{dd-MMM-yyyy, HH:mm:ss.SSS} [%t] %-5p %c - %m%n'
+        TimeBasedTriggeringPolicy:
+          interval: 1
+          modulate: true
+  Loggers:
+    Root:
+      level: debug
+      AppenderRef:
+        ref: File
+    Logger:
+      -
+        name: com.perspective
+        level: debug
+        AppenderRef:
+          ref: PerspectiveFile
+      -
+        name: org.springframework
+        level: info
+        AppenderRef:
+          ref: File
+      -
+        name: org.hibernate
+        level: info
+        AppenderRef:
+          ref: File

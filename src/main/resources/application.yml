@@ -1,0 +1,22 @@
+server:
+  port: 9097
+logging:
+  config: classpath:log4j2.yml
+app:
+  configuration:
+    email:
+      destination: "mail@mail.ru|mail1@mail.ru"
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: username
+    password: passwd
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
