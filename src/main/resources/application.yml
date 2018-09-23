@@ -4,6 +4,15 @@ logging:
   config: classpath:log4j2.yml
 app:
   configuration:
+    bot:
+      token: "673739546:AAGwl_Hpu0py6olPk_-P6TIbld-iBse-UBM"
+      name: "EmailSubscriber007Bot"
+      proxy:
+        enabled: true
+        host: "45.76.135.34"
+        port: 10080
+        user: "teleForever_user"
+        password: "frg45yFgg4L"
     email:
       destination: "mail@mail.ru|mail1@mail.ru"
 spring:

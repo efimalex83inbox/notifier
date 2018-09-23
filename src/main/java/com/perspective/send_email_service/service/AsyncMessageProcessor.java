@@ -38,8 +38,9 @@ public class AsyncMessageProcessor implements MessageProcessor {
                         emailSender.send(bean, new Data(""));
                         return bean;
                     } catch (Exception e) {
-                        throw new RuntimeException(e.getMessage(), e);
-                        //todo logging
+                        logger.error("An exception occurred when try to send the message [{}] by email",
+                                notifyBean, e);
+                        return bean;
                     }
                 }).thenApplyAsync(bean -> {
                     try {
@@ -49,10 +50,17 @@ public class AsyncMessageProcessor implements MessageProcessor {
                             telegramSender.send(bean, data);
                         return bean;
                     } catch (Exception e) {
-                        throw new RuntimeException(e.getMessage(), e);
-                        //todo logging
+                        logger.error("An exception occurred when try to send the message [{}] by telegram",
+                                notifyBean, e);
+                        return bean;
                     }
                 });
+
+        try {
+            future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("An exception occurred when try to execute the message [{}]", notifyBean, e);
+        }
 
     }
 }

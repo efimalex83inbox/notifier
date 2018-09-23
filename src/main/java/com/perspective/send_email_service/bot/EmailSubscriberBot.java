@@ -2,12 +2,16 @@ package com.perspective.send_email_service.bot;
 
 import com.perspective.send_email_service.bot.parser.MessageParser;
 import com.perspective.send_email_service.bot.strategy.BotCommandExecuteStrategy;
+import com.perspective.send_email_service.configuration.property.BotProperties;
+import com.perspective.send_email_service.configuration.property.BotProxyProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -15,36 +19,35 @@ import org.telegram.telegrambots.meta.ApiContext;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
 import java.util.Map;
 
 @Component
 public class EmailSubscriberBot extends TelegramLongPollingBot {
-
-    private static String PROXY_HOST = "45.76.135.34" /* proxy host */;
-    private static Integer PROXY_PORT = 10080 /* proxy port */;
-    private static String PROXY_USER = "teleForever_user" /* proxy user */;
-    private static String PROXY_PASSWORD = "frg45yFgg4L" /* proxy password */;
-
+    private Logger logger = LoggerFactory.getLogger(EmailSubscriberBot.class);
 
     private final Map<String, BotCommandExecuteStrategy> strategyMap;
     private final BotCommandExecuteStrategy defaultStrategy;
+    private final BotProxyProperties botProxyProperties;
+    private final BotProperties botProperties;
 
     private final MessageParser botCmdNameParser;
     private final MessageParser botCmdValueParser;
 
     public EmailSubscriberBot(Map<String, BotCommandExecuteStrategy> strategyMap,
                               BotCommandExecuteStrategy defaultStrategy,
+                              BotProxyProperties botProxyProperties,
+                              BotProperties botProperties,
                               MessageParser botCmdNameParser,
                               MessageParser botCmdValueParser) {
         this.strategyMap = strategyMap;
         this.defaultStrategy = defaultStrategy;
+        this.botProxyProperties = botProxyProperties;
+        this.botProperties = botProperties;
         this.botCmdNameParser = botCmdNameParser;
         this.botCmdValueParser = botCmdValueParser;
     }
@@ -52,7 +55,7 @@ public class EmailSubscriberBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "673739546:AAGwl_Hpu0py6olPk_-P6TIbld-iBse-UBM";
+        return this.botProperties.getToken();
     }
 
     @Override
@@ -68,7 +71,7 @@ public class EmailSubscriberBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "EmailSubscriber007Bot";
+        return botProperties.getName();
     }
 
     public synchronized void sendMsg(String chatId, String s) {
@@ -79,28 +82,29 @@ public class EmailSubscriberBot extends TelegramLongPollingBot {
         try {
             this.execute(sendMessage);
         } catch (TelegramApiException e) {
-//            log.log(Level.SEVERE, "Exception: ", e.toString());
+            logger.error("Exception: ", e);
         }
     }
 
     @PostConstruct
     public void init() {
         try {
-//            EmailSubscriberBot bot = new EmailSubscriberBot();
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
             // Set up Http proxy
             DefaultBotOptions botOptions = ApiContext.getInstance(DefaultBotOptions.class);
 
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(
-                    new AuthScope(PROXY_HOST, PROXY_PORT),
-                    new UsernamePasswordCredentials(PROXY_USER, PROXY_PASSWORD));
+            if (this.botProxyProperties.getEnabled()) {
+                CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                credsProvider.setCredentials(
+                        new AuthScope(botProxyProperties.getHost(), botProxyProperties.getPort()),
+                        new UsernamePasswordCredentials(botProxyProperties.getUser(), botProxyProperties.getPassword()));
 
-            RequestConfig requestConfig = RequestConfig.custom().setAuthenticationEnabled(true).build();
-            botOptions.setRequestConfig(requestConfig);
-            botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
-            botOptions.setProxyHost(PROXY_HOST);
-            botOptions.setProxyPort(PROXY_PORT);
+                RequestConfig requestConfig = RequestConfig.custom().setAuthenticationEnabled(true).build();
+                botOptions.setRequestConfig(requestConfig);
+                botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
+                botOptions.setProxyHost(botProxyProperties.getHost());
+                botOptions.setProxyPort(botProxyProperties.getPort());
+            }
 
 
             telegramBotsApi.registerBot(this);
