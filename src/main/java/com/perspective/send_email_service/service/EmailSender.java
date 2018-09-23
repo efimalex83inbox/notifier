@@ -5,6 +5,7 @@ import com.perspective.send_email_service.subscriber.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +22,11 @@ public class EmailSender implements NotifyService {
 
     @Override
     public void send(NotifyBean bean, Data data) {
-        logger.info("Send by email: " + bean);
-//        SimpleMailMessage message = new SimpleMailMessage();
-//        message.setTo(bean.getTo());
-//        message.setSubject(bean.getSubject());
-//        message.setText(bean.getText());
-//        emailSender.send(message);
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(bean.getTo());
+        message.setSubject(bean.getSubject());
+        message.setText(bean.getText());
+        emailSender.send(message);
     }
 }
 

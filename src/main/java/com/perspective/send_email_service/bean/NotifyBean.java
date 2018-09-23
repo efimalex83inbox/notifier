@@ -1,11 +1,18 @@
 package com.perspective.send_email_service.bean;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 public class NotifyBean {
 
     private String to;
 
+    @NotNull(message = "{bean.subject.not.empty}")
+    @NotEmpty
     private String subject;
 
+    @NotNull(message = "{bean.subject.not.empty}")
+    @NotEmpty
     private String text;
 
     public String getTo() {

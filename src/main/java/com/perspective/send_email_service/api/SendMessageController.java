@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -21,50 +22,15 @@ public class SendMessageController {
     }
 
     @RequestMapping(value = "/api/notifier/send", method = RequestMethod.POST)
-    public ResponseEntity<?> send(@RequestBody NotifyBean notifyBean) {
-
-
-        notifyService.execute(notifyBean);
-
-//        IPayloadWrapper formDefinition;
-//        try {
-//            IPayloadWrapper message = this.payloadFactory.create();
-//            this.providerField.out(message, provider);
-//            formDefinition = this.obtainFormDefinitionService.execute(message);
-//        } catch (Exception e) {
-//            logger.error("An error occurred when call [getFormDefinition].", e);
-//            throw new IllegalStateException(String.format("An exception occurred when try to " +
-//                    "obtain the form definition for provider [%s]", provider), e);
-//        }
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/api/notifier/send", method = RequestMethod.GET)
-    public ResponseEntity<?> sendTest() {
-
+    public ResponseEntity<?> send(@Valid @RequestBody NotifyBean notifyBean) {
         List<String> all = recipientDao.findAll();
-
         all.forEach(email -> {
-            NotifyBean notifyBean = new NotifyBean();
-            notifyBean.setTo(email);
-            notifyBean.setSubject("12345");
-            notifyBean.setText("text text text");
-            notifyService.execute(notifyBean);
+            NotifyBean nb = new NotifyBean();
+            nb.setTo(email);
+            nb.setSubject(notifyBean.getSubject());
+            nb.setText(notifyBean.getText());
+            notifyService.execute(nb);
         });
-
-
-
-//        IPayloadWrapper formDefinition;
-//        try {
-//            IPayloadWrapper message = this.payloadFactory.create();
-//            this.providerField.out(message, provider);
-//            formDefinition = this.obtainFormDefinitionService.execute(message);
-//        } catch (Exception e) {
-//            logger.error("An error occurred when call [getFormDefinition].", e);
-//            throw new IllegalStateException(String.format("An exception occurred when try to " +
-//                    "obtain the form definition for provider [%s]", provider), e);
-//        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
 }
